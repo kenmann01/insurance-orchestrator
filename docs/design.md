@@ -38,11 +38,14 @@ justification:
   scoring died.
 
 The risk of a shared structure is hidden coupling, so the discipline is explicit: each
-agent may read the sections it needs and may write ONLY its own field. Nothing except
-intake_agent mutates `case.intake`; nothing except enrichment_agent mutates
-`case.enrichment`; the same rule holds for `case.risk` and `case.recommendation`. The
-pipeline orchestrator touches only `case.status` and, on escalation, forces the
-recommendation in the way described under the failure policy.
+agent may read the sections it needs and may write ONLY its own field. Concretely, the
+agents are pure functions that receive what they need and return a result; the pipeline
+orchestrator performs every write, assigning each agent's result to its own field
+immediately after the call returns: `case.intake` comes only from intake_agent's
+output, `case.enrichment` only from enrichment_agent's, and the same rule holds for
+`case.risk` and `case.recommendation`. The orchestrator also touches `case.status`
+and, on escalation, forces the recommendation in the way described under the failure
+policy.
 
 ## Memory scope: per case only
 
@@ -70,7 +73,7 @@ There is one span per agent call plus a parent pipeline span. Span fields:
 - `attempt` (1 for the first try, incremented on retries)
 - `started_at`, `ended_at`: ISO-8601 UTC timestamps
 - `duration_ms`: measured with `perf_counter` (monotonic, so it is safe for durations)
-- `input`, `output`: the prompt parts and the parsed result (or raw text on failure)
+- `input`, `output`: the prompt parts and the parsed result (output stays null on failure; the failure text lives in `error`)
 - `usage`: `input_tokens`, `output_tokens`, `model`
 - `status`: one of `ok`, `error`, `retry`, `escalated`
 - `error`: the error message when status is not `ok`, else null
