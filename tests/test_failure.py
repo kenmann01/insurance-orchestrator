@@ -2,6 +2,8 @@
 
 import json
 
+import pytest
+
 from underwriting.llm import ScriptedClient, TimeoutRiskClient
 from underwriting.models import RawApplication
 from underwriting.pipeline import run_case
@@ -134,8 +136,6 @@ def test_timeout_risk_client_passes_non_risk_calls_through():
 
     intake = client.complete("You are the intake agent", "Application JSON: {}")
     assert json.loads(intake.text)["applicant_name"] == "Marcus Boone"
-
-    import pytest
 
     with pytest.raises(TimeoutError, match="simulated risk scoring timeout"):
         client.complete("You are the risk scoring agent", "Intake JSON: {}")

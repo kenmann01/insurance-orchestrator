@@ -9,7 +9,6 @@ inference runs locally.
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 from underwriting.pricing import HOSTED_RATES_PER_MTOK, case_cost

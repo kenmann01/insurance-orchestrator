@@ -17,12 +17,14 @@ def test_span_cost_simple_arithmetic():
 
 
 def test_case_cost_sums_over_spans():
+    # Third span worked out by hand: 1,000,000 input at $3.00/Mtok = $3.00,
+    # 100,000 output at $15.00/Mtok = $1.50, so that span costs $4.50.
     spans = [
         {"usage": {"input_tokens": 1_000_000, "output_tokens": 0, "model": "x"}},
         {"usage": {"input_tokens": 0, "output_tokens": 1_000_000, "model": "x"}},
-        {"usage": {"input_tokens": 120, "output_tokens": 80, "model": "x"}},
+        {"usage": {"input_tokens": 1_000_000, "output_tokens": 100_000, "model": "x"}},
     ]
-    expected = 3.0 + 15.0 + span_cost(120, 80)
+    expected = 3.0 + 15.0 + 4.5
     assert case_cost(spans) == pytest.approx(expected)
 
 

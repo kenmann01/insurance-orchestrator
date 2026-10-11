@@ -2,6 +2,8 @@
 
 import json
 
+import pytest
+
 from underwriting.llm import ScriptedClient
 from underwriting.models import RawApplication
 from underwriting.pipeline import RetryableError, call_with_retry, run_case
@@ -82,12 +84,8 @@ def test_call_with_retry_exhausts_and_raises():
     def always_fails():
         raise RetryableError("down")
 
-    try:
+    with pytest.raises(RetryableError, match="down"):
         call_with_retry(always_fails, attempts=3, sleep=lambda s: None)
-    except RetryableError as exc:
-        assert str(exc) == "down"
-    else:
-        raise AssertionError("expected RetryableError")
 
 
 def test_run_case_completes_with_approve(tmp_path):

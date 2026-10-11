@@ -8,7 +8,6 @@ Examples:
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 from underwriting.llm import OllamaClient, ScriptedClient, TimeoutRiskClient

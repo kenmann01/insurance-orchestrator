@@ -45,7 +45,12 @@ def test_complete_strips_think_and_maps_token_counts():
     assert response.model == "qwen3:8b"
 
 
-def test_complete_defaults_missing_counts_and_model():
+def test_complete_defaults_missing_counts_and_model(monkeypatch):
+    # Pin the default model fallback: on a dev box UNDERWRITING_MODEL may be
+    # set, and this test asserts the qwen3:8b fallback specifically.
+    monkeypatch.delenv("UNDERWRITING_MODEL", raising=False)
+    monkeypatch.delenv("UNDERWRITING_OLLAMA_HOST", raising=False)
+    monkeypatch.delenv("OLLAMA_HOST", raising=False)
     canned = {"message": {"content": "ok"}}
     client = OllamaClient(
         host="http://127.0.0.1:11434/",

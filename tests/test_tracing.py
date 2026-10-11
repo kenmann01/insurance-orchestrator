@@ -101,4 +101,4 @@ def test_usage_recording_client_drains_and_clears():
     assert recorder.drain() == []
     recorder.complete("You are the intake agent", "more")
     recorder.clear()
-    assert recorder.records == []
+    assert recorder.drain() == []
