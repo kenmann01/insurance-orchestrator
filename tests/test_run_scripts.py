@@ -106,6 +106,36 @@ def test_analyze_traces_writes_report_from_fabricated_trace(tmp_path):
     assert "https://www.anthropic.com/pricing" in text
 
 
+def test_run_cases_main_writes_trace_for_single_case(tmp_path):
+    run_cases = load_script("run_cases")
+    traces = tmp_path / "traces"
+    code = run_cases.main(
+        [
+            "--backend",
+            "scripted",
+            "--case",
+            "CASE-001",
+            "--traces-dir",
+            str(traces),
+        ]
+    )
+    assert code == 0
+    files = list(traces.glob("*.json"))
+    assert len(files) == 1
+    data = json.loads(files[0].read_text(encoding="utf-8"))
+    # run_case generates its own case id (uuid hex); the CASE-001 label only
+    # selects the fixture, so just check the id shape here.
+    assert len(data["case_id"]) == 32
+    agents = [s["agent"] for s in data["spans"]]
+    assert agents == [
+        "pipeline",
+        "intake_agent",
+        "enrichment_agent",
+        "risk_scoring_agent",
+        "recommendation_agent",
+    ]
+
+
 def test_analyze_traces_refuses_empty_dir(tmp_path, capsys):
     analyzer = load_script("analyze_traces")
     empty = tmp_path / "empty"

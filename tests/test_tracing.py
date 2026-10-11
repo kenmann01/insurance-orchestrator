@@ -90,6 +90,42 @@ def test_set_usage_and_record_usage():
     assert span2.usage == {"input_tokens": 8, "output_tokens": 5, "model": "m3"}
 
 
+def test_load_round_trips_dump_with_parent_child_structure(tmp_path):
+    tracer = Tracer("case-99")
+    with tracer.pipeline_span() as pipeline:
+        with tracer.span("intake_agent", input={"a": 1}, attempt=2) as span:
+            span.output = {"b": 2}
+            set_usage(span, 11, 7, "scripted")
+    path = tmp_path / "trace.json"
+    tracer.dump(path)
+
+    loaded = Tracer.load(path)
+    assert loaded.trace_id == tracer.trace_id
+    assert loaded.case_id == "case-99"
+    assert loaded.created_at == tracer.created_at
+    assert len(loaded.spans) == 2
+    parent, child = loaded.spans
+    assert parent.trace_id == tracer.trace_id
+    assert parent.span_id == pipeline.span_id
+    assert parent.parent_span_id is None
+    assert parent.agent == "pipeline"
+    assert child.parent_span_id == parent.span_id
+    assert child.agent == "intake_agent"
+    assert child.attempt == 2
+    assert child.input == {"a": 1}
+    assert child.output == {"b": 2}
+    assert child.usage == {
+        "input_tokens": 11,
+        "output_tokens": 7,
+        "model": "scripted",
+    }
+    assert child.status == "ok"
+    assert child.error is None
+    assert child.started_at == span.started_at
+    assert child.ended_at == span.ended_at
+    assert child.duration_ms == span.duration_ms
+
+
 def test_usage_recording_client_drains_and_clears():
     inner = ScriptedClient({"intake agent": '{"x": 1}'})
     recorder = UsageRecordingClient(inner)

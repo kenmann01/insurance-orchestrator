@@ -5,7 +5,7 @@ import json
 import httpx
 import pytest
 
-from underwriting.llm import OllamaClient, strip_think
+from underwriting.llm import OllamaClient, _default_host, _default_model, strip_think
 
 
 def chat_handler(payload_json: dict):
@@ -105,6 +105,34 @@ def test_health_true_on_200_and_false_on_error():
 
     dead = OllamaClient(transport=httpx.MockTransport(dead_handler))
     assert dead.health() is False
+
+
+def test_default_host_and_model_fallback_order(monkeypatch):
+    # Implemented order: UNDERWRITING_OLLAMA_HOST beats OLLAMA_HOST beats the
+    # built-in default; UNDERWRITING_MODEL beats the built-in model.
+    monkeypatch.delenv("UNDERWRITING_OLLAMA_HOST", raising=False)
+    monkeypatch.delenv("OLLAMA_HOST", raising=False)
+    monkeypatch.delenv("UNDERWRITING_MODEL", raising=False)
+    assert _default_host() == "http://127.0.0.1:11434"
+    assert _default_model() == "qwen3:8b"
+
+    monkeypatch.setenv("OLLAMA_HOST", "http://fallback:11434")
+    assert _default_host() == "http://fallback:11434"
+    monkeypatch.setenv("UNDERWRITING_OLLAMA_HOST", "http://primary:11434")
+    assert _default_host() == "http://primary:11434"
+    monkeypatch.setenv("UNDERWRITING_MODEL", "llama3:8b")
+    assert _default_model() == "llama3:8b"
+
+    # The constructor uses the same resolution when host/model are omitted.
+    client = OllamaClient()
+    assert client.host == "http://primary:11434"
+    assert client.model == "llama3:8b"
+
+    monkeypatch.delenv("UNDERWRITING_OLLAMA_HOST", raising=False)
+    monkeypatch.delenv("UNDERWRITING_MODEL", raising=False)
+    client = OllamaClient()
+    assert client.host == "http://fallback:11434"
+    assert client.model == "qwen3:8b"
 
 
 def test_http_error_raises():
