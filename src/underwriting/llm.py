@@ -1,13 +1,16 @@
-"""LLM client protocol, a scripted offline client, and JSON repair parsing.
+"""LLM clients and JSON repair parsing.
 
-Nothing in this module touches the network: tests and demos use ScriptedClient,
-and later commits can add a real client (for example an Ollama HTTP client)
-that satisfies the same LLMClient protocol.
+ScriptedClient is the deterministic offline client used by tests and demos.
+OllamaClient talks to a local Ollama server over HTTP and maps its token
+counts into LLMResponse. Both satisfy the same LLMClient protocol, so the
+agents and the pipeline never know which one is behind them.
 """
 
 import json
-from typing import Protocol, TypeVar
+import re
+from typing import Any, Protocol, TypeVar
 
+import httpx
 from pydantic import BaseModel, ValidationError
 
 
@@ -141,3 +144,86 @@ def parse_json_model(
             raise AgentOutputError(
                 f"invalid JSON from model after repair: {exc2}"
             ) from exc2
+
+
+_THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
+def strip_think(text: str) -> str:
+    """Remove reasoning blocks from a model reply and trim whitespace.
+
+    Handles any number of <think>...</think> blocks anywhere in the text
+    plus a stray leading closing tag left by a truncated block.
+    """
+    cleaned = _THINK_BLOCK.sub("", text)
+    stripped = cleaned.lstrip()
+    if stripped.startswith("</think>"):
+        stripped = stripped[len("</think>"):]
+    return stripped.strip()
+
+
+class OllamaClient(LLMClient):
+    """LLMClient backed by a local Ollama server's /api/chat endpoint.
+
+    The transport parameter exists for tests: pass an httpx.MockTransport to
+    intercept HTTP calls; in normal use it stays None and httpx uses its
+    default transport.
+    """
+
+    def __init__(
+        self,
+        host: str = "http://127.0.0.1:11434",
+        model: str = "qwen3:8b",
+        timeout: float = 240.0,
+        temperature: float = 0.0,
+        think: bool = False,
+        keep_alive: str = "30m",
+        transport: Any = None,
+    ) -> None:
+        self.host = host.rstrip("/")
+        self.model = model
+        self.timeout = timeout
+        self.temperature = temperature
+        self.think = think
+        self.keep_alive = keep_alive
+        self.transport = transport
+
+    def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
+        # httpx's top-level helpers do not take a transport, so an injected
+        # transport (tests) goes through a short-lived httpx.Client instead.
+        if self.transport is not None:
+            with httpx.Client(transport=self.transport) as http:
+                return http.request(method, self.host + path, **kwargs)
+        return httpx.request(method, self.host + path, **kwargs)
+
+    def complete(self, system: str, user: str) -> LLMResponse:
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            "stream": False,
+            "think": self.think,
+            "keep_alive": self.keep_alive,
+            "options": {"temperature": self.temperature},
+        }
+        response = self._request("POST", "/api/chat", json=payload, timeout=self.timeout)
+        response.raise_for_status()
+        data = response.json()
+        message = data.get("message") or {}
+        content = strip_think(message.get("content") or "")
+        return LLMResponse(
+            text=content,
+            input_tokens=data.get("prompt_eval_count") or 0,
+            output_tokens=data.get("eval_count") or 0,
+            model=data.get("model") or self.model,
+        )
+
+    def health(self) -> bool:
+        """True when the server answers GET /api/tags with a 200."""
+        try:
+            response = self._request("GET", "/api/tags", timeout=3.0)
+            return response.status_code == 200
+        except Exception:
+            return False
