@@ -161,6 +161,10 @@ def complete_parsed(llm: LLMClient, system: str, user: str, model_cls: type[T]) 
 
 _THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL)
 
+# Health checks must fail fast: this probes whether the server is up, not
+# whether a cold model load has finished.
+HEALTH_CHECK_TIMEOUT_SECONDS = 3.0
+
 
 def strip_think(text: str) -> str:
     """Remove reasoning blocks from a model reply and trim whitespace.
@@ -197,6 +201,9 @@ class OllamaClient(LLMClient):
     back to http://127.0.0.1:11434 and qwen3:8b.
     """
 
+    # The timeout=240.0 and keep_alive="30m" defaults are deliberate: a cold
+    # start can spend minutes reloading the model into VRAM, and the long
+    # keep-alive keeps the model resident across a whole run of cases.
     def __init__(
         self,
         host: str | None = None,
@@ -250,9 +257,13 @@ class OllamaClient(LLMClient):
     def health(self) -> bool:
         """True when the server answers GET /api/tags with a 200."""
         try:
-            response = self._request("GET", "/api/tags", timeout=3.0)
+            response = self._request(
+                "GET", "/api/tags", timeout=HEALTH_CHECK_TIMEOUT_SECONDS
+            )
             return response.status_code == 200
-        except Exception:
+        except (httpx.HTTPError, OSError):
+            # Transport-level failures only: a programming error must not
+            # masquerade as "server unhealthy".
             return False
 
 

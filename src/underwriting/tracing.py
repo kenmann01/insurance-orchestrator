@@ -159,6 +159,9 @@ class Tracer:
         try:
             yield span
         except BaseException as exc:
+            # BaseException on purpose: spans must close with an error
+            # record even on KeyboardInterrupt or SystemExit, and the
+            # exception is re-raised below, so nothing is swallowed here.
             span.ended_at = datetime.now(timezone.utc).isoformat()
             span.duration_ms = round((time.perf_counter() - start) * 1000.0, 1)
             span.status = "error"

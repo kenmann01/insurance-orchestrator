@@ -19,6 +19,10 @@ RISK_SYSTEM = (
     "Factor points MUST sum to the score."
 )
 
+SCORE_MIN = 0
+SCORE_MAX = 100
+FACTOR_SUM_TOLERANCE = 5
+
 
 def risk_scoring_agent(
     intake: IntakeResult,
@@ -34,13 +38,13 @@ def risk_scoring_agent(
     )
     result = complete_parsed(llm, RISK_SYSTEM, user, RiskResult)
 
-    score = max(0, min(100, int(result.score)))
+    score = max(SCORE_MIN, min(SCORE_MAX, int(result.score)))
     factors = list(result.factors) if result.factors else []
     total = sum(f.points for f in factors)
-    if abs(total - score) > 5:
+    if abs(total - score) > FACTOR_SUM_TOLERANCE:
         raise AgentOutputError(
             f"factor points sum {total} does not match score {score} "
-            "within tolerance 5"
+            f"within tolerance {FACTOR_SUM_TOLERANCE}"
         )
     result.score = score
     result.factors = factors

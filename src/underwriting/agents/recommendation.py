@@ -16,6 +16,9 @@ from underwriting.models import (
     RiskResult,
 )
 
+APPROVE_MAX_SCORE = 30
+REFER_MAX_SCORE = 60
+
 RECOMMENDATION_SYSTEM = (
     "You are the recommendation agent. You issue the final underwriting "
     "decision for a case.\n"
@@ -28,9 +31,9 @@ RECOMMENDATION_SYSTEM = (
     "- A missing critical field (date_of_birth, product, coverage_amount) "
     "forces refer.\n"
     "- credit_band no_hit forces refer.\n"
-    "- Score 0-30 approves.\n"
-    "- Score 31-60 refers.\n"
-    "- Score 61-100 denies.\n"
+    f"- Score 0-{APPROVE_MAX_SCORE} approves.\n"
+    f"- Score {APPROVE_MAX_SCORE + 1}-{REFER_MAX_SCORE} refers.\n"
+    f"- Score {REFER_MAX_SCORE + 1}-100 denies.\n"
     "Apply the rules yourself; the gate line in the user message is a "
     "cross-check, not a value to copy blindly."
 )
@@ -53,9 +56,9 @@ def gate_decision(
         return "refer"
     if risk is None:
         return "refer"
-    if risk.score <= 30:
+    if risk.score <= APPROVE_MAX_SCORE:
         return "approve"
-    if risk.score <= 60:
+    if risk.score <= REFER_MAX_SCORE:
         return "refer"
     return "deny"
 
