@@ -66,6 +66,34 @@ class ScriptedClient(LLMClient):
         )
 
 
+class UsageRecordingClient(LLMClient):
+    """Wraps any LLMClient and records every LLMResponse it returns.
+
+    The pipeline uses one shared instance so each agent span can attach the
+    usage of exactly the calls made during that span: drain() returns the
+    responses recorded since the last drain and clears the buffer.
+    """
+
+    def __init__(self, inner: LLMClient) -> None:
+        self.inner = inner
+        self.records: list[LLMResponse] = []
+
+    def complete(self, system: str, user: str) -> LLMResponse:
+        response = self.inner.complete(system, user)
+        self.records.append(response)
+        return response
+
+    def clear(self) -> None:
+        """Drop all recorded responses."""
+        self.records.clear()
+
+    def drain(self) -> list[LLMResponse]:
+        """Return the recorded responses and clear the buffer."""
+        records = list(self.records)
+        self.records.clear()
+        return records
+
+
 def strip_json_fences(text: str) -> str:
     """Remove a leading ```json or ``` fence line and a trailing ``` fence line."""
     stripped = text.strip()
