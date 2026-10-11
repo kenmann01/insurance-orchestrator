@@ -7,7 +7,7 @@ fails a structural check. The model is treated as untrusted output.
 
 from datetime import datetime
 
-from underwriting.llm import LLMClient, parse_json_model
+from underwriting.llm import LLMClient, complete_parsed
 from underwriting.models import IntakeResult, RawApplication
 
 INTAKE_SYSTEM = (
@@ -29,8 +29,7 @@ INTAKE_SYSTEM = (
 
 def intake_agent(raw: RawApplication, *, llm: LLMClient) -> IntakeResult:
     user = "Application JSON:\n" + raw.model_dump_json()
-    response = llm.complete(INTAKE_SYSTEM, user)
-    result = parse_json_model(llm, INTAKE_SYSTEM, user, response.text, IntakeResult)
+    result = complete_parsed(llm, INTAKE_SYSTEM, user, IntakeResult)
 
     model_missing = list(result.missing_fields)
     notes = list(result.notes)

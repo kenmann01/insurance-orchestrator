@@ -8,7 +8,7 @@ it cannot move the decision.
 
 from typing import Literal
 
-from underwriting.llm import LLMClient, parse_json_model
+from underwriting.llm import LLMClient, complete_parsed
 from underwriting.models import (
     EnrichmentResult,
     IntakeResult,
@@ -78,10 +78,7 @@ def recommendation_agent(
         + f"\n\nThe policy gate currently evaluates this case as: {expected}. "
         "Apply the rules yourself and state your decision."
     )
-    response = llm.complete(RECOMMENDATION_SYSTEM, user)
-    parsed = parse_json_model(
-        llm, RECOMMENDATION_SYSTEM, user, response.text, RecommendationResult
-    )
+    parsed = complete_parsed(llm, RECOMMENDATION_SYSTEM, user, RecommendationResult)
     if parsed.decision != expected:
         parsed.decision = expected
         parsed.reasons.append("gate held: policy decision is " + expected)

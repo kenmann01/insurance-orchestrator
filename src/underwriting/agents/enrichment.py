@@ -11,7 +11,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from underwriting import bureau as bureau_module
-from underwriting.llm import LLMClient, parse_json_model
+from underwriting.llm import LLMClient, complete_parsed
 from underwriting.models import EnrichmentResult, IntakeResult
 
 ENRICHMENT_SYSTEM = (
@@ -56,10 +56,7 @@ def enrichment_agent(
         + "\n\nBureau facts JSON:\n"
         + json.dumps(facts)
     )
-    response = llm.complete(ENRICHMENT_SYSTEM, user)
-    parsed = parse_json_model(
-        llm, ENRICHMENT_SYSTEM, user, response.text, EnrichmentInterpretation
-    )
+    parsed = complete_parsed(llm, ENRICHMENT_SYSTEM, user, EnrichmentInterpretation)
     return EnrichmentResult(
         credit_band=facts["credit_band"],
         prior_claims_count=facts.get("prior_claims_count", 0),

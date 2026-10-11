@@ -6,7 +6,7 @@ actually add up to the score (within a small tolerance), because an
 unexplained score is exactly the kind of output an underwriter cannot trust.
 """
 
-from underwriting.llm import AgentOutputError, LLMClient, parse_json_model
+from underwriting.llm import AgentOutputError, LLMClient, complete_parsed
 from underwriting.models import EnrichmentResult, IntakeResult, RiskResult
 
 RISK_SYSTEM = (
@@ -32,8 +32,7 @@ def risk_scoring_agent(
         + "\n\nEnrichment JSON:\n"
         + enrichment.model_dump_json()
     )
-    response = llm.complete(RISK_SYSTEM, user)
-    result = parse_json_model(llm, RISK_SYSTEM, user, response.text, RiskResult)
+    result = complete_parsed(llm, RISK_SYSTEM, user, RiskResult)
 
     score = max(0, min(100, int(result.score)))
     factors = list(result.factors) if result.factors else []

@@ -147,6 +147,18 @@ def parse_json_model(
             ) from exc2
 
 
+def complete_parsed(llm: LLMClient, system: str, user: str, model_cls: type[T]) -> T:
+    """Complete a prompt and parse the reply into model_cls.
+
+    One call to llm.complete() followed by parse_json_model(), so a reply
+    that fails to parse gets exactly one repair attempt (see parse_json_model)
+    and a still-invalid reply raises AgentOutputError; no value is ever
+    invented here. Every agent uses this instead of hand-rolling the pair.
+    """
+    response = llm.complete(system, user)
+    return parse_json_model(llm, system, user, response.text, model_cls)
+
+
 _THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 
@@ -247,21 +259,29 @@ class OllamaClient(LLMClient):
 class TimeoutRiskClient(LLMClient):
     """Fault injector for failure drills: times out the risk scoring agent.
 
-    Wraps any LLMClient. Calls routed to the risk scoring agent raise
-    TimeoutError for the first fail_first_n risk calls (use -1 for always);
-    every other call, and later risk calls once the budget is spent, pass
-    through to the inner client. The counter only advances on risk calls so
-    fail_first_n means "first N risk scoring calls", not "first N calls of
-    any agent".
+    Wraps any LLMClient. Calls whose prompt contains agent_marker raise
+    TimeoutError for the first fail_first_n matching calls (use -1 for
+    always); every other call, and later matching calls once the budget is
+    spent, pass through to the inner client. The counter only advances on
+    matching calls so fail_first_n means "first N risk scoring calls", not
+    "first N calls of any agent". agent_marker defaults to the risk scoring
+    marker the agents' system prompts actually start with; tests key on the
+    same phrase.
     """
 
-    def __init__(self, inner: LLMClient, fail_first_n: int) -> None:
+    def __init__(
+        self,
+        inner: LLMClient,
+        fail_first_n: int,
+        agent_marker: str = "risk scoring agent",
+    ) -> None:
         self.inner = inner
         self.fail_first_n = fail_first_n
+        self.agent_marker = agent_marker
         self._calls = 0
 
     def complete(self, system: str, user: str) -> LLMResponse:
-        if "risk scoring agent" in (system + "\n" + user):
+        if self.agent_marker in (system + "\n" + user):
             if self.fail_first_n == -1 or self._calls < self.fail_first_n:
                 self._calls += 1
                 raise TimeoutError("simulated risk scoring timeout")
