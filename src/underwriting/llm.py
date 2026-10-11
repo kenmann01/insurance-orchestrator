@@ -227,3 +227,28 @@ class OllamaClient(LLMClient):
             return response.status_code == 200
         except Exception:
             return False
+
+
+class TimeoutRiskClient(LLMClient):
+    """Fault injector for failure drills: times out the risk scoring agent.
+
+    Wraps any LLMClient. Calls routed to the risk scoring agent raise
+    TimeoutError for the first fail_first_n risk calls (use -1 for always);
+    every other call, and later risk calls once the budget is spent, pass
+    through to the inner client. The counter only advances on risk calls so
+    fail_first_n means "first N risk scoring calls", not "first N calls of
+    any agent".
+    """
+
+    def __init__(self, inner: LLMClient, fail_first_n: int) -> None:
+        self.inner = inner
+        self.fail_first_n = fail_first_n
+        self._calls = 0
+
+    def complete(self, system: str, user: str) -> LLMResponse:
+        if "risk scoring agent" in (system + "\n" + user):
+            if self.fail_first_n == -1 or self._calls < self.fail_first_n:
+                self._calls += 1
+                raise TimeoutError("simulated risk scoring timeout")
+            self._calls += 1
+        return self.inner.complete(system, user)
