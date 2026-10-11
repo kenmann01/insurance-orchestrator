@@ -9,7 +9,9 @@ from underwriting.llm import OllamaClient, _default_host, _default_model, strip_
 
 
 def chat_handler(payload_json: dict):
+    """Build a MockTransport handler echoing a canned /api/chat payload."""
     def handler(request: httpx.Request) -> httpx.Response:
+        """Assert the chat path and return the canned payload plus the sent request."""
         assert request.url.path == "/api/chat"
         sent = json.loads(request.content)
         return httpx.Response(200, json={**payload_json, "request": sent})
@@ -18,6 +20,7 @@ def chat_handler(payload_json: dict):
 
 
 def test_strip_think_removes_blocks_and_stray_closing_tag():
+    """Think blocks, a stray closing tag, and surrounding whitespace are all removed."""
     text = "<think>reasoning here</think>\n{\"a\": 1}"
     assert strip_think(text) == '{"a": 1}'
     text2 = "<think>one</think>middle<think>two</think>end"
@@ -29,6 +32,7 @@ def test_strip_think_removes_blocks_and_stray_closing_tag():
 
 
 def test_complete_strips_think_and_maps_token_counts():
+    """A think-wrapped reply is stripped and ollama's token counts map into LLMResponse."""
     canned = {
         "model": "qwen3:8b",
         "message": {
@@ -46,6 +50,7 @@ def test_complete_strips_think_and_maps_token_counts():
 
 
 def test_complete_defaults_missing_counts_and_model(monkeypatch):
+    """Missing token counts become 0 and a missing model falls back to the configured one."""
     # Pin the default model fallback: on a dev box UNDERWRITING_MODEL may be
     # set, and this test asserts the qwen3:8b fallback specifically.
     monkeypatch.delenv("UNDERWRITING_MODEL", raising=False)
@@ -64,9 +69,11 @@ def test_complete_defaults_missing_counts_and_model(monkeypatch):
 
 
 def test_complete_payload_shape():
+    """The /api/chat payload carries stream, think, keep_alive, options, and messages."""
     captured = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
+        """Capture the request JSON and answer with a minimal canned reply."""
         captured.update(json.loads(request.content))
         return httpx.Response(
             200,
@@ -93,7 +100,9 @@ def test_complete_payload_shape():
 
 
 def test_health_true_on_200_and_false_on_error():
+    """health() is True on a 200 from /api/tags and False on a connection error."""
     def ok_handler(request: httpx.Request) -> httpx.Response:
+        """Answer GET /api/tags with 200 and an empty model list."""
         assert request.url.path == "/api/tags"
         return httpx.Response(200, json={"models": []})
 
@@ -101,6 +110,7 @@ def test_health_true_on_200_and_false_on_error():
     assert good.health() is True
 
     def dead_handler(request: httpx.Request) -> httpx.Response:
+        """Simulate a dead server by raising a connect error."""
         raise httpx.ConnectError("connection refused")
 
     dead = OllamaClient(transport=httpx.MockTransport(dead_handler))
@@ -108,6 +118,7 @@ def test_health_true_on_200_and_false_on_error():
 
 
 def test_default_host_and_model_fallback_order(monkeypatch):
+    """UNDERWRITING_OLLAMA_HOST beats OLLAMA_HOST beats the default; UNDERWRITING_MODEL beats qwen3:8b."""
     # Implemented order: UNDERWRITING_OLLAMA_HOST beats OLLAMA_HOST beats the
     # built-in default; UNDERWRITING_MODEL beats the built-in model.
     monkeypatch.delenv("UNDERWRITING_OLLAMA_HOST", raising=False)
@@ -136,7 +147,9 @@ def test_default_host_and_model_fallback_order(monkeypatch):
 
 
 def test_http_error_raises():
+    """A 500 reply raises httpx.HTTPStatusError instead of being swallowed."""
     def fail_handler(request: httpx.Request) -> httpx.Response:
+        """Return a 500 response with an error body."""
         return httpx.Response(500, json={"error": "boom"})
 
     client = OllamaClient(transport=httpx.MockTransport(fail_handler))

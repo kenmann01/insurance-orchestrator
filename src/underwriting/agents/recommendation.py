@@ -70,6 +70,13 @@ def recommendation_agent(
     *,
     llm: LLMClient,
 ) -> RecommendationResult:
+    """Produce the final RecommendationResult under the policy gate.
+
+    The model drafts decision, reasons, and conditions; code first computes
+    gate_decision() from the case sections and overrides any contradicting
+    model decision (appending a "gate held" reason), so the model can add
+    color but cannot move the decision.
+    """
     expected = gate_decision(intake, enrichment, risk)
     user = (
         "Intake JSON:\n"

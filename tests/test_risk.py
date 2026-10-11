@@ -1,3 +1,5 @@
+"""Tests for the risk scoring agent's clamp and factor-sum validation."""
+
 import pytest
 
 from underwriting.agents.risk import risk_scoring_agent
@@ -6,10 +8,12 @@ from underwriting.models import EnrichmentResult, IntakeResult
 
 
 def _client(reply: str) -> ScriptedClient:
+    """Scripted client that replies to the risk scoring marker with reply."""
     return ScriptedClient({"risk scoring agent": reply})
 
 
 def _inputs() -> tuple[IntakeResult, EnrichmentResult]:
+    """A clean intake and enrichment pair ready to be scored."""
     intake = IntakeResult(
         applicant_name="Dana Whitfield",
         date_of_birth="1990-04-12",
@@ -23,6 +27,7 @@ def _inputs() -> tuple[IntakeResult, EnrichmentResult]:
 
 
 def test_risk_happy_path():
+    """A score whose factor points add up exactly passes validation unchanged."""
     intake, enrichment = _inputs()
     reply = (
         '{"score": 22, "factors": [{"name": "claims", "points": 12, '
@@ -36,6 +41,7 @@ def test_risk_happy_path():
 
 
 def test_risk_score_is_clamped_into_range():
+    """An out-of-range score is clamped to 100 while the factor sum still matches it."""
     intake, enrichment = _inputs()
     reply = (
         '{"score": 130, "factors": [{"name": "claims", "points": 60, '
@@ -48,6 +54,7 @@ def test_risk_score_is_clamped_into_range():
 
 
 def test_risk_factor_sum_mismatch_raises():
+    """Factor points that miss the score raise AgentOutputError."""
     intake, enrichment = _inputs()
     reply = (
         '{"score": 40, "factors": [{"name": "claims", "points": 90, '

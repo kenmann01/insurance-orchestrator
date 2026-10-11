@@ -77,6 +77,12 @@ def slowest_agent(records: list[dict]) -> tuple[str, float, float]:
 
 
 def build_report(records: list[dict]) -> str:
+    """Render the loaded trace dicts into the markdown cost/latency report.
+
+    One table row per trace plus an AVERAGE row, then the analysis prose:
+    data provenance, batch and real-time verdicts against the quoting
+    budget, the slowest agent, and the hosted-equivalent cost note.
+    """
     stats = [trace_stats(data) for data in records]
     n = len(stats)
     avg = lambda key: sum(s[key] for s in stats) / n  # noqa: E731
@@ -176,6 +182,7 @@ def build_report(records: list[dict]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Load every trace and write the report; exit 1 when none are found."""
     parser = argparse.ArgumentParser(
         description="Summarize traces into docs/cost_latency.md."
     )

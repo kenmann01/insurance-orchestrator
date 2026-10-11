@@ -8,6 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def load_script(name: str):
+    """Import a script from scripts/ by file path, without package machinery."""
     spec = importlib.util.spec_from_file_location(
         name, REPO_ROOT / "scripts" / f"{name}.py"
     )
@@ -17,6 +18,7 @@ def load_script(name: str):
 
 
 def test_parse_risk_failures():
+    """'always' maps to -1; integer strings parse with surrounding whitespace tolerated."""
     run_cases = load_script("run_cases")
     assert run_cases.parse_risk_failures("always") == -1
     assert run_cases.parse_risk_failures("2") == 2
@@ -25,6 +27,7 @@ def test_parse_risk_failures():
 
 
 def test_fixture_data_shape():
+    """The fixture file holds the four expected cases, decisions, and scripted sets."""
     run_cases = load_script("run_cases")
     entries = run_cases.load_applications(REPO_ROOT / "data" / "applications.json")
     assert [e["case_id"] for e in entries] == [
@@ -47,6 +50,7 @@ def test_fixture_data_shape():
 
 
 def test_analyze_traces_writes_report_from_fabricated_trace(tmp_path):
+    """A fabricated trace yields a report naming the case, slowest agent, and $0.00 cost."""
     analyzer = load_script("analyze_traces")
     traces = tmp_path / "traces"
     traces.mkdir()
@@ -107,6 +111,7 @@ def test_analyze_traces_writes_report_from_fabricated_trace(tmp_path):
 
 
 def test_run_cases_main_writes_trace_for_single_case(tmp_path):
+    """Scripted run_cases.main on one case exits 0 and writes exactly one trace."""
     run_cases = load_script("run_cases")
     traces = tmp_path / "traces"
     code = run_cases.main(
@@ -137,6 +142,7 @@ def test_run_cases_main_writes_trace_for_single_case(tmp_path):
 
 
 def test_analyze_traces_refuses_empty_dir(tmp_path, capsys):
+    """An empty traces directory exits 1 with a hint instead of writing a report."""
     analyzer = load_script("analyze_traces")
     empty = tmp_path / "empty"
     empty.mkdir()

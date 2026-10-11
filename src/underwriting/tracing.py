@@ -29,6 +29,7 @@ class Span:
         agent: str,
         attempt: int,
     ) -> None:
+        """Create a span that starts timing immediately (started_at is now)."""
         self.trace_id = trace_id
         self.span_id = span_id
         self.parent_span_id = parent_span_id
@@ -45,6 +46,7 @@ class Span:
         self.error: str | None = None
 
     def to_dict(self) -> dict:
+        """Return every field as a JSON-ready dict (the Tracer.dump format)."""
         return {
             "trace_id": self.trace_id,
             "span_id": self.span_id,
@@ -115,6 +117,7 @@ class Tracer:
     """Collects spans for one case and can dump or summarize the trace."""
 
     def __init__(self, case_id: str) -> None:
+        """Start a new trace with a fresh id for this case."""
         self.trace_id: str = uuid4().hex
         self.case_id = case_id
         self.created_at: str = datetime.now(timezone.utc).isoformat()
@@ -155,6 +158,7 @@ class Tracer:
 
     @contextmanager
     def _timed(self, span: Span) -> Iterator[Span]:
+        """Time the body; mark the span error on any exception, then re-raise."""
         start = time.perf_counter()
         try:
             yield span

@@ -31,7 +31,16 @@ class AgentOutputError(RuntimeError):
 class LLMClient(Protocol):
     """Anything that can complete a prompt. Agents depend on this, not on a SDK."""
 
-    def complete(self, system: str, user: str) -> LLMResponse: ...
+    def complete(self, system: str, user: str) -> LLMResponse:
+        """Send one system+user prompt and return the model reply.
+
+        Implementations return an LLMResponse carrying the reply text, token
+        counts (0 when the backend does not report them), and the model name.
+        They must be plain injectable objects so tests can substitute
+        scripted or fault-injecting stand-ins. Implementations may raise on
+        transport or routing failures; they never invent a reply.
+        """
+        ...
 
 
 class ScriptedClient(LLMClient):
@@ -50,12 +59,14 @@ class ScriptedClient(LLMClient):
         output_tokens: int = 80,
         model: str = "scripted",
     ) -> None:
+        """Store the marker keyed replies and the fixed usage numbers per reply."""
         self.responses = dict(responses)
         self.input_tokens = input_tokens
         self.output_tokens = output_tokens
         self.model = model
 
     def complete(self, system: str, user: str) -> LLMResponse:
+        """Return the first reply whose key appears in system + "\\n" + user."""
         prompt = system + "\n" + user
         for key, value in self.responses.items():
             if key in prompt:
@@ -79,10 +90,12 @@ class UsageRecordingClient(LLMClient):
     """
 
     def __init__(self, inner: LLMClient) -> None:
+        """Wrap inner; recording starts with an empty buffer."""
         self.inner = inner
         self.records: list[LLMResponse] = []
 
     def complete(self, system: str, user: str) -> LLMResponse:
+        """Delegate to inner, record the response, and return it unchanged."""
         response = self.inner.complete(system, user)
         self.records.append(response)
         return response
@@ -180,6 +193,7 @@ def strip_think(text: str) -> str:
 
 
 def _default_host() -> str:
+    """UNDERWRITING_OLLAMA_HOST, then OLLAMA_HOST, then the local default."""
     return (
         os.environ.get("UNDERWRITING_OLLAMA_HOST")
         or os.environ.get("OLLAMA_HOST")
@@ -188,6 +202,7 @@ def _default_host() -> str:
 
 
 def _default_model() -> str:
+    """UNDERWRITING_MODEL, then the qwen3:8b default."""
     return os.environ.get("UNDERWRITING_MODEL") or "qwen3:8b"
 
 
@@ -214,6 +229,7 @@ class OllamaClient(LLMClient):
         keep_alive: str = "30m",
         transport: Any = None,
     ) -> None:
+        """Store settings; a None host or model is resolved from the environment."""
         self.host = (host if host is not None else _default_host()).rstrip("/")
         self.model = model if model is not None else _default_model()
         self.timeout = timeout
@@ -223,6 +239,7 @@ class OllamaClient(LLMClient):
         self.transport = transport
 
     def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
+        """Issue an HTTP request against the configured host."""
         # httpx's top-level helpers do not take a transport, so an injected
         # transport (tests) goes through a short-lived httpx.Client instead.
         if self.transport is not None:
@@ -231,6 +248,13 @@ class OllamaClient(LLMClient):
         return httpx.request(method, self.host + path, **kwargs)
 
     def complete(self, system: str, user: str) -> LLMResponse:
+        """POST /api/chat and map the reply into an LLMResponse.
+
+        Reasoning blocks are stripped from the content, ollama's
+        prompt_eval_count/eval_count become the token counts (0 when
+        missing), and the model name falls back to the configured model
+        when the server omits it.
+        """
         payload = {
             "model": self.model,
             "messages": [
@@ -286,12 +310,14 @@ class TimeoutRiskClient(LLMClient):
         fail_first_n: int,
         agent_marker: str = "risk scoring agent",
     ) -> None:
+        """Wrap inner; fail_first_n bounds injected timeouts, -1 means always."""
         self.inner = inner
         self.fail_first_n = fail_first_n
         self.agent_marker = agent_marker
         self._calls = 0
 
     def complete(self, system: str, user: str) -> LLMResponse:
+        """Raise TimeoutError while the matching-call budget lasts, else pass through."""
         if self.agent_marker in (system + "\n" + user):
             if self.fail_first_n == -1 or self._calls < self.fail_first_n:
                 self._calls += 1

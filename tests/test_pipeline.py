@@ -58,6 +58,7 @@ SCRIPTED_RESPONSES = {
 
 
 def test_call_with_retry_success_first_try():
+    """A first-try success returns the result with a single recorded attempt."""
     calls = []
     result, used = call_with_retry(lambda: calls.append(1) or "ok", sleep=lambda s: None)
     assert result == "ok"
@@ -65,10 +66,12 @@ def test_call_with_retry_success_first_try():
 
 
 def test_call_with_retry_retries_then_succeeds():
+    """Two retryable failures produce the default backoff sleeps and three attempts."""
     calls = {"n": 0}
     sleeps = []
 
     def flaky():
+        """Fail twice with a retryable error, then succeed."""
         calls["n"] += 1
         if calls["n"] < 3:
             raise RetryableError("transient")
@@ -81,7 +84,9 @@ def test_call_with_retry_retries_then_succeeds():
 
 
 def test_call_with_retry_exhausts_and_raises():
+    """The last failure is raised once the attempt budget is spent."""
     def always_fails():
+        """Raise a retryable error on every attempt."""
         raise RetryableError("down")
 
     with pytest.raises(RetryableError, match="down"):
@@ -89,6 +94,7 @@ def test_call_with_retry_exhausts_and_raises():
 
 
 def test_run_case_completes_with_approve(tmp_path):
+    """A clean scripted run completes with all four sections filled and an approve."""
     client = ScriptedClient(SCRIPTED_RESPONSES)
     case = run_case(DANA, client, traces_dir=tmp_path)
 
@@ -102,6 +108,7 @@ def test_run_case_completes_with_approve(tmp_path):
 
 
 def test_run_case_trace_structure_and_handoff(tmp_path):
+    """The trace has the fixed span order, ok statuses, parent links, and the handoff."""
     client = ScriptedClient(SCRIPTED_RESPONSES)
     case = run_case(DANA, client, traces_dir=tmp_path)
 
@@ -139,6 +146,7 @@ def test_run_case_trace_structure_and_handoff(tmp_path):
 
 
 def test_run_case_span_usage_attached_per_agent(tmp_path):
+    """Every agent span carries usage from exactly its own scripted calls."""
     client = ScriptedClient(SCRIPTED_RESPONSES)
     run_case(DANA, client, traces_dir=tmp_path)
 

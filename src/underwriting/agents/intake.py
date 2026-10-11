@@ -28,6 +28,14 @@ INTAKE_SYSTEM = (
 
 
 def intake_agent(raw: RawApplication, *, llm: LLMClient) -> IntakeResult:
+    """Normalize the raw application into an IntakeResult.
+
+    The model proposes the normalized record; code afterwards has the final
+    word: it recomputes missing_fields from the parsed result, nulls any
+    date_of_birth that is not an ISO YYYY-MM-DD date, drops products outside
+    auto/home/life, nulls non-positive coverage amounts, and notes every
+    correction the model's own missing_fields missed.
+    """
     user = "Application JSON:\n" + raw.model_dump_json()
     result = complete_parsed(llm, INTAKE_SYSTEM, user, IntakeResult)
 

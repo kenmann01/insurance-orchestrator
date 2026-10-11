@@ -1,7 +1,10 @@
+"""Tests for CaseRecord construction and RawApplication defaults."""
+
 from underwriting.models import CaseRecord, RawApplication
 
 
 def _raw() -> RawApplication:
+    """RawApplication with only the required fields set."""
     return RawApplication(
         applicant_name="Dana Whitfield",
         product="auto",
@@ -10,6 +13,7 @@ def _raw() -> RawApplication:
 
 
 def test_case_record_new_unique_ids_and_default_status():
+    """CaseRecord.new gives unique ids, in_progress status, and all-null sections."""
     a = CaseRecord.new(_raw())
     b = CaseRecord.new(_raw())
     assert a.case_id != b.case_id
@@ -21,6 +25,7 @@ def test_case_record_new_unique_ids_and_default_status():
 
 
 def test_case_record_keeps_raw_application():
+    """CaseRecord.new keeps the submitted application unchanged."""
     raw = _raw()
     record = CaseRecord.new(raw)
     assert record.raw.applicant_name == "Dana Whitfield"
@@ -28,6 +33,7 @@ def test_case_record_keeps_raw_application():
 
 
 def test_raw_application_optional_fields_default_to_none():
+    """Optional RawApplication fields default to None."""
     raw = _raw()
     assert raw.date_of_birth is None
     assert raw.address is None

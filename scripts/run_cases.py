@@ -26,6 +26,7 @@ def parse_risk_failures(value: str) -> int:
 
 
 def load_applications(path: Path) -> list[dict]:
+    """Read the fixture applications JSON into a list of case entry dicts."""
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
@@ -206,6 +207,11 @@ SCRIPTED_RESPONSES: dict[str, dict[str, str]] = {
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the selected cases through the pipeline and print a summary each.
+
+    Returns 0 when every final decision matches the fixture expectation,
+    1 on any mismatch, and 2 when the ollama backend is unreachable.
+    """
     parser = argparse.ArgumentParser(
         description="Run fixture underwriting cases through the pipeline."
     )

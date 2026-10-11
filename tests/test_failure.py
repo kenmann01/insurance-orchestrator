@@ -62,10 +62,12 @@ SCRIPTED_RESPONSES = {
 
 
 def read_trace(tmp_path) -> dict:
+    """Load the single trace JSON written into tmp_path."""
     return json.loads(next(tmp_path.glob("*.json")).read_text(encoding="utf-8"))
 
 
 def test_always_failing_risk_escalates_to_refer(tmp_path):
+    """Three failing risk attempts escalate to a code-issued referral, no invented decision."""
     client = TimeoutRiskClient(ScriptedClient(SCRIPTED_RESPONSES), fail_first_n=-1)
     case = run_case(MARCUS, client, traces_dir=tmp_path)
 
@@ -107,6 +109,7 @@ def test_always_failing_risk_escalates_to_refer(tmp_path):
 
 
 def test_one_risk_failure_recovers_on_second_attempt(tmp_path):
+    """One injected timeout recovers on attempt 2 with real usage on the ok span."""
     client = TimeoutRiskClient(ScriptedClient(SCRIPTED_RESPONSES), fail_first_n=1)
     case = run_case(MARCUS, client, traces_dir=tmp_path)
 
@@ -131,6 +134,7 @@ def test_one_risk_failure_recovers_on_second_attempt(tmp_path):
 
 
 def test_timeout_risk_client_passes_non_risk_calls_through():
+    """Non-risk calls pass through at once; only risk calls spend the timeout budget."""
     inner = ScriptedClient(SCRIPTED_RESPONSES)
     client = TimeoutRiskClient(inner, fail_first_n=1)
 

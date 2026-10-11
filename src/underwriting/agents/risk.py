@@ -30,6 +30,13 @@ def risk_scoring_agent(
     *,
     llm: LLMClient,
 ) -> RiskResult:
+    """Score the case with a 0-100 score and an explained factor breakdown.
+
+    The model proposes score, factors, and rationale; code clamps the score
+    into [SCORE_MIN, SCORE_MAX] and raises AgentOutputError when the factor
+    points miss the clamped score by more than FACTOR_SUM_TOLERANCE, because
+    an unexplained score is exactly the output an underwriter cannot trust.
+    """
     user = (
         "Intake JSON:\n"
         + intake.model_dump_json()

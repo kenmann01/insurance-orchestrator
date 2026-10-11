@@ -10,6 +10,7 @@ from underwriting.tracing import Tracer, record_usage, set_usage
 
 
 def test_span_records_duration_and_ok_status():
+    """A span exiting normally closes with ok status, an end time, and positive duration."""
     tracer = Tracer("case-1")
     with tracer.pipeline_span():
         with tracer.span("intake_agent") as span:
@@ -23,6 +24,7 @@ def test_span_records_duration_and_ok_status():
 
 
 def test_exception_marks_error_and_reraises():
+    """An exception inside a span marks it error with the message and re-raises."""
     tracer = Tracer("case-1")
     with pytest.raises(ValueError, match="boom"):
         with tracer.pipeline_span():
@@ -35,6 +37,7 @@ def test_exception_marks_error_and_reraises():
 
 
 def test_dump_writes_parent_child_structure(tmp_path):
+    """dump() writes the trace id, case id, timing, and parent-child span links."""
     tracer = Tracer("case-42")
     with tracer.pipeline_span() as pipeline:
         with tracer.span("intake_agent", input={"a": 1}) as intake_span:
@@ -59,6 +62,7 @@ def test_dump_writes_parent_child_structure(tmp_path):
 
 
 def test_summary_contains_agents_and_total_row():
+    """summary() lists every agent and a TOTAL row with summed token counts."""
     tracer = Tracer("case-7")
     with tracer.pipeline_span():
         with tracer.span("intake_agent") as span:
@@ -76,6 +80,7 @@ def test_summary_contains_agents_and_total_row():
 
 
 def test_set_usage_and_record_usage():
+    """set_usage overwrites the usage dict; record_usage sums responses, last model wins."""
     tracer = Tracer("case-1")
     with tracer.span("intake_agent") as span:
         set_usage(span, 3, 4, "m1")
@@ -91,6 +96,7 @@ def test_set_usage_and_record_usage():
 
 
 def test_load_round_trips_dump_with_parent_child_structure(tmp_path):
+    """A dumped trace reloads with ids, timing, usage, and parent-child links intact."""
     tracer = Tracer("case-99")
     with tracer.pipeline_span() as pipeline:
         with tracer.span("intake_agent", input={"a": 1}, attempt=2) as span:
@@ -127,6 +133,7 @@ def test_load_round_trips_dump_with_parent_child_structure(tmp_path):
 
 
 def test_usage_recording_client_drains_and_clears():
+    """drain() returns and clears buffered responses; clear() empties without returning."""
     inner = ScriptedClient({"intake agent": '{"x": 1}'})
     recorder = UsageRecordingClient(inner)
     assert recorder.complete("You are the intake agent", "hi").text == '{"x": 1}'
