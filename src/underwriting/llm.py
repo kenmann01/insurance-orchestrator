@@ -7,6 +7,7 @@ agents and the pipeline never know which one is behind them.
 """
 
 import json
+import os
 import re
 from typing import Any, Protocol, TypeVar
 
@@ -162,26 +163,40 @@ def strip_think(text: str) -> str:
     return stripped.strip()
 
 
+def _default_host() -> str:
+    return (
+        os.environ.get("UNDERWRITING_OLLAMA_HOST")
+        or os.environ.get("OLLAMA_HOST")
+        or "http://127.0.0.1:11434"
+    )
+
+
+def _default_model() -> str:
+    return os.environ.get("UNDERWRITING_MODEL") or "qwen3:8b"
+
+
 class OllamaClient(LLMClient):
     """LLMClient backed by a local Ollama server's /api/chat endpoint.
 
     The transport parameter exists for tests: pass an httpx.MockTransport to
     intercept HTTP calls; in normal use it stays None and httpx uses its
-    default transport.
+    default transport. Host and model default to the environment variables
+    UNDERWRITING_OLLAMA_HOST (or OLLAMA_HOST) and UNDERWRITING_MODEL, falling
+    back to http://127.0.0.1:11434 and qwen3:8b.
     """
 
     def __init__(
         self,
-        host: str = "http://127.0.0.1:11434",
-        model: str = "qwen3:8b",
+        host: str | None = None,
+        model: str | None = None,
         timeout: float = 240.0,
         temperature: float = 0.0,
         think: bool = False,
         keep_alive: str = "30m",
         transport: Any = None,
     ) -> None:
-        self.host = host.rstrip("/")
-        self.model = model
+        self.host = (host if host is not None else _default_host()).rstrip("/")
+        self.model = model if model is not None else _default_model()
         self.timeout = timeout
         self.temperature = temperature
         self.think = think

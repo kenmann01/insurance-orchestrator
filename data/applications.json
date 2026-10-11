@@ -1,0 +1,54 @@
+[
+  {
+    "case_id": "CASE-001",
+    "expected_decision": "approve",
+    "application": {
+      "applicant_name": "Dana Whitfield",
+      "date_of_birth": "1990-04-12",
+      "address": "48 Alder Lane, Springfield",
+      "product": "auto",
+      "coverage_amount": 42000,
+      "stated_income": 78000,
+      "claims_history_text": "No prior claims. Vehicle is 3 years old."
+    }
+  },
+  {
+    "case_id": "CASE-002",
+    "expected_decision": "deny",
+    "application": {
+      "applicant_name": "Marcus Boone",
+      "date_of_birth": "1978-11-02",
+      "address": "9 Granite Court, Springfield",
+      "product": "home",
+      "coverage_amount": 1200000,
+      "stated_income": 48000,
+      "claims_history_text": "Three prior claims in five years: water damage, fire, and theft. Home is 22 years old."
+    }
+  },
+  {
+    "case_id": "CASE-003",
+    "expected_decision": "refer",
+    "application": {
+      "applicant_name": "Priya Natarajan",
+      "date_of_birth": "1985-07-21",
+      "address": "221 Birch Street, Springfield",
+      "product": "life",
+      "coverage_amount": 500000,
+      "stated_income": null,
+      "claims_history_text": null
+    }
+  },
+  {
+    "case_id": "CASE-004",
+    "expected_decision": "approve",
+    "application": {
+      "applicant_name": "Elena Petrov",
+      "date_of_birth": "1992-01-30",
+      "address": "17 Forge Road, Springfield",
+      "product": "auto",
+      "coverage_amount": 55000,
+      "stated_income": 66000,
+      "claims_history_text": "One windshield claim in 2023."
+    }
+  }
+]

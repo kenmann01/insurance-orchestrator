@@ -62,6 +62,32 @@ class Span:
             "error": self.error,
         }
 
+    @classmethod
+    def from_dict(cls, data: dict) -> "Span":
+        """Rebuild a span from its dumped dict form."""
+        span = cls(
+            data["trace_id"],
+            data["span_id"],
+            data["parent_span_id"],
+            data["case_id"],
+            data["agent"],
+            int(data["attempt"]),
+        )
+        span.started_at = data["started_at"]
+        span.ended_at = data.get("ended_at")
+        span.duration_ms = float(data.get("duration_ms", 0.0))
+        span.input = data.get("input")
+        span.output = data.get("output")
+        usage = data.get("usage") or {}
+        span.usage = {
+            "input_tokens": int(usage.get("input_tokens", 0)),
+            "output_tokens": int(usage.get("output_tokens", 0)),
+            "model": usage.get("model", ""),
+        }
+        span.status = data.get("status", "ok")
+        span.error = data.get("error")
+        return span
+
 
 def set_usage(span: Span, input_tokens: int, output_tokens: int, model: str) -> None:
     """Attach token totals and the model name to a span's usage dict."""
@@ -154,6 +180,16 @@ class Tracer:
         }
         target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return target
+
+    @classmethod
+    def load(cls, path: str | Path) -> "Tracer":
+        """Rebuild a Tracer (spans included) from a dumped trace file."""
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        tracer = cls(data["case_id"])
+        tracer.trace_id = data["trace_id"]
+        tracer.created_at = data["created_at"]
+        tracer.spans = [Span.from_dict(span) for span in data["spans"]]
+        return tracer
 
     def summary(self) -> str:
         """Fixed-width ASCII table: one row per span plus a TOTAL row."""

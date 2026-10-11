@@ -4,3 +4,5 @@ __pycache__/
 .pytest_cache/
 submission.html
 evidence/*.png
+traces/
+docs/cost_latency.md
