@@ -75,3 +75,18 @@ def test_intake_code_catches_missing_field_the_model_omitted():
     assert "date_of_birth" in result.missing_fields
     assert "looks fine" in result.notes
     assert any("corrected" in note for note in result.notes)
+
+
+def test_intake_blank_product_and_nonpositive_coverage_are_flagged():
+    """A null product and a non-positive coverage amount are nulled and listed."""
+    reply = (
+        '{"applicant_name": "Dana Whitfield", "date_of_birth": "1990-04-12", '
+        '"product": null, "coverage_amount": 0, "stated_income": 80000.0, '
+        '"missing_fields": [], "notes": []}'
+    )
+    result = intake_agent(_raw(), llm=_client(reply))
+    assert result.product is None
+    assert result.coverage_amount is None
+    assert "product" in result.missing_fields
+    assert "coverage_amount" in result.missing_fields
+    assert any("corrected" in note for note in result.notes)

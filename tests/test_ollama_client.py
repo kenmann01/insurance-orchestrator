@@ -155,3 +155,37 @@ def test_http_error_raises():
     client = OllamaClient(transport=httpx.MockTransport(fail_handler))
     with pytest.raises(httpx.HTTPStatusError):
         client.complete("system", "user")
+
+
+def test_complete_without_injected_transport_uses_plain_request(monkeypatch):
+    """Without a transport the client issues the request via httpx.request directly."""
+    seen = {}
+
+    class FakeResponse:
+        def raise_for_status(self):
+            """No-op success."""
+
+        def json(self):
+            """Minimal /api/chat body with token counts."""
+            return {
+                "model": "qwen3:8b",
+                "message": {"content": "plain path reply"},
+                "prompt_eval_count": 7,
+                "eval_count": 3,
+            }
+
+    def fake_request(method, url, **kwargs):
+        """Record the call and answer without touching the network."""
+        seen["method"] = method
+        seen["url"] = url
+        seen["payload"] = kwargs.get("json")
+        return FakeResponse()
+
+    monkeypatch.setattr(httpx, "request", fake_request)
+    client = OllamaClient()
+    response = client.complete("sys prompt", "usr prompt")
+    assert response.text == "plain path reply"
+    assert (response.input_tokens, response.output_tokens) == (7, 3)
+    assert seen["method"] == "POST"
+    assert seen["url"] == "http://127.0.0.1:11434/api/chat"
+    assert seen["payload"]["messages"][1]["content"] == "usr prompt"

@@ -1,0 +1,29 @@
+   Building insurance-orchestrator @ file:///D:/Genspark/insurance-orchestrator
+      Built insurance-orchestrator @ file:///D:/Genspark/insurance-orchestrator
+Uninstalled 1 package in 1ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 1 package in 10ms
+.............................................................            [100%]
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.14.7-final-0 _______________
+
+Name                                        Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------
+src\underwriting\__init__.py                    0      0   100%
+src\underwriting\agents\__init__.py             0      0   100%
+src\underwriting\agents\enrichment.py          15      0   100%
+src\underwriting\agents\intake.py              31      0   100%
+src\underwriting\agents\recommendation.py      29      0   100%
+src\underwriting\agents\risk.py                17      0   100%
+src\underwriting\bureau.py                      7      0   100%
+src\underwriting\llm.py                       117      0   100%
+src\underwriting\models.py                     40      0   100%
+src\underwriting\pipeline.py                   80      0   100%
+src\underwriting\pricing.py                    12      0   100%
+src\underwriting\tracing.py                   118      0   100%
+-------------------------------------------------------------------------
+TOTAL                                         466      0   100%
+Required test coverage of 97.0% reached. Total coverage: 100.00%
+61 passed in 0.89s

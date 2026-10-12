@@ -49,6 +49,12 @@ def test_strip_json_fences_removes_fence_lines():
     assert strip_json_fences('  {"a": 1}  ') == '{"a": 1}'
 
 
+def test_strip_json_fences_blank_input_returns_empty():
+    """Blank input has no fences to strip and returns an empty string."""
+    assert strip_json_fences("") == ""
+    assert strip_json_fences("   \n ") == ""
+
+
 def test_parse_json_model_happy_path():
     """Valid JSON parses straight into the model class with no repair call."""
     client = ScriptedClient({"unused": "{}"})

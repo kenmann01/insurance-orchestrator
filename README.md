@@ -15,6 +15,7 @@ ollama pull qwen3:8b
 
 ```bash
 uv run pytest -q                                                # offline test suite: no network, no real LLM
+uv run pytest -q --cov --cov-report=term-missing                # same suite with coverage; the 97 percent floor lives in pyproject
 uv run scripts/run_cases.py                                     # all four fixture cases on local Ollama, one trace JSON per run in traces/
 uv run scripts/run_cases.py --risk-failures 2                   # failure drill: the risk agent times out twice, then the case recovers
 uv run scripts/run_cases.py --risk-failures always              # failure drill: the risk agent always times out, the case escalates to a code-issued refer

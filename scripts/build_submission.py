@@ -407,8 +407,10 @@ def build_html() -> str:
     # 8 passing pipeline run (CI)
     body8 = (
         '<div class="note">The GitHub Actions workflow runs the same offline suite '
-        "on every push; the latest run is green. The 57-test local capture of the "
-        "same suite is evidence/pytest.txt in section 2.</div>"
+        "on every push; the latest run is green. The 61-test local capture of the "
+        "same suite is evidence/pytest.txt in section 2, and coverage is enforced "
+        "at a 97 percent floor in pyproject.</div>"
+        + try_term("evidence/coverage.txt", "uv run pytest -q --cov --cov-report=term-missing")
         + try_term("evidence/ci-run.txt", "gh run list --repo kenmann01/insurance-orchestrator --limit 1")
         + '<div class="url"><a href="https://github.com/kenmann01/insurance-orchestrator/actions">'
         "https://github.com/kenmann01/insurance-orchestrator/actions</a></div>"

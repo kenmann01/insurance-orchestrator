@@ -93,6 +93,12 @@ def test_call_with_retry_exhausts_and_raises():
         call_with_retry(always_fails, attempts=3, sleep=lambda s: None)
 
 
+def test_call_with_retry_zero_attempts_trips_loop_guard():
+    """An attempt budget of zero trips the defensive loop invariant."""
+    with pytest.raises(AssertionError, match="without a result"):
+        call_with_retry(lambda: "never", attempts=0, sleep=lambda s: None)
+
+
 def test_run_case_completes_with_approve(tmp_path):
     """A clean scripted run completes with all four sections filled and an approve."""
     client = ScriptedClient(SCRIPTED_RESPONSES)

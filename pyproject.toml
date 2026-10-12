@@ -10,6 +10,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8",
+    "pytest-cov>=7.1.0",
 ]
 
 [build-system]
@@ -21,3 +22,10 @@ packages = ["src/underwriting"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["src/underwriting"]
+
+[tool.coverage.report]
+fail_under = 97
+show_missing = true
