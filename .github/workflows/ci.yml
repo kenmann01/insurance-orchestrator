@@ -11,4 +11,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync
-      - run: uv run pytest -q
+      - run: uv run pytest -q --cov --cov-report=term-missing
