@@ -12,6 +12,7 @@ import ast
 import html
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -421,24 +422,43 @@ def build_html() -> str:
     return "".join(p)
 
 
+def browser_executable() -> str:
+    """Headless Edge on Windows, otherwise the first Chromium-family binary on PATH."""
+    windows = (
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    )
+    for candidate in windows:
+        if Path(candidate).is_file():
+            return candidate
+    for name in ("microsoft-edge", "msedge", "chromium", "chromium-browser", "google-chrome"):
+        found = shutil.which(name)
+        if found:
+            return found
+    raise FileNotFoundError(
+        "no headless browser found; install Edge or Chromium to print submission.pdf"
+    )
+
+
 def main() -> None:
-    """Write submission.html and print it to submission.pdf with headless Edge."""
+    """Write submission.html and print it to submission.pdf with headless Edge or Chromium."""
     html_path = ROOT / "submission.html"
     html_path.write_text(build_html(), encoding="utf-8")
 
     pdf_path = ROOT / "submission.pdf"
-    edge = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    edge = browser_executable()
     subprocess.run(
         [
             edge,
             "--headless",
             "--disable-gpu",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
             "--no-pdf-header-footer",
             f"--print-to-pdf={pdf_path}",
             html_path.as_uri(),
         ],
         check=True,
-        capture_output=True,
         timeout=120,
     )
 

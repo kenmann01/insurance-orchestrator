@@ -1,0 +1,17 @@
+
+CASE-004: Elena Petrov | backend: ollama | expected: approve
+=========================================================================
+AGENT                     ATT STATUS            MS  TOKENS IN  TOKENS OUT
+-------------------------------------------------------------------------
+pipeline                    1 ok            9590.6          0           0
+intake_agent                1 ok            7740.1        250          89
+enrichment_agent            1 ok            1698.9        249          19
+risk_scoring_agent          1 retry            0.0          0           0
+risk_scoring_agent          2 retry            0.0          0           0
+risk_scoring_agent          3 error            0.0          0           0
+pipeline_escalation         1 escalated        0.0          0           0
+-------------------------------------------------------------------------
+TOTAL                                      19029.6        499         108
+=========================================================================
+NOTE: this case escalated (risk scoring kept failing), so code issued a referral without a model decision; against an approve expectation that MISMATCH is the designed outcome of the drill.
+decision: refer | expected: approve | MISMATCH

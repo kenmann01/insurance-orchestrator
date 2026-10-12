@@ -1,0 +1,16 @@
+
+CASE-004: Elena Petrov | backend: ollama | expected: approve
+=========================================================================
+AGENT                     ATT STATUS            MS  TOKENS IN  TOKENS OUT
+-------------------------------------------------------------------------
+pipeline                    1 ok           61566.9          0           0
+intake_agent                1 ok           23676.9        250          89
+enrichment_agent            1 ok            5124.6        249          19
+risk_scoring_agent          1 retry            0.2          0           0
+risk_scoring_agent          2 retry            0.0          0           0
+risk_scoring_agent          3 ok           22731.9        216         262
+recommendation_agent        1 ok            9879.6        532          26
+-------------------------------------------------------------------------
+TOTAL                                     122980.1       1247         396
+=========================================================================
+decision: refer | expected: approve | MISMATCH
