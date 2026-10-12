@@ -1,0 +1,234 @@
+{
+  "trace_id": "6a1d3edbfac94d69a430119cd5864d82",
+  "case_id": "bdbe757a971b467fbe704c316016c6db",
+  "created_at": "2026-10-12T00:54:48.282355+00:00",
+  "spans": [
+    {
+      "trace_id": "6a1d3edbfac94d69a430119cd5864d82",
+      "span_id": "6476b01201c24eaca7bd8d0caf9f1342",
+      "parent_span_id": null,
+      "case_id": "bdbe757a971b467fbe704c316016c6db",
+      "agent": "pipeline",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:48.282368+00:00",
+      "ended_at": "2026-10-12T00:55:07.523056+00:00",
+      "duration_ms": 19242.8,
+      "input": null,
+      "output": null,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "model": ""
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "6a1d3edbfac94d69a430119cd5864d82",
+      "span_id": "24307f7ad0164314854cd90d872d40f3",
+      "parent_span_id": "6476b01201c24eaca7bd8d0caf9f1342",
+      "case_id": "bdbe757a971b467fbe704c316016c6db",
+      "agent": "intake_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:48.282410+00:00",
+      "ended_at": "2026-10-12T00:54:52.359603+00:00",
+      "duration_ms": 4077.2,
+      "input": {
+        "applicant_name": "Elena Petrov",
+        "date_of_birth": "1992-01-30",
+        "address": "17 Forge Road, Springfield",
+        "product": "auto",
+        "coverage_amount": 55000.0,
+        "stated_income": 66000.0,
+        "claims_history_text": "One windshield claim in 2023."
+      },
+      "output": {
+        "applicant_name": "Elena Petrov",
+        "date_of_birth": "1992-01-30",
+        "product": "auto",
+        "coverage_amount": 55000.0,
+        "stated_income": 66000.0,
+        "missing_fields": [],
+        "notes": [
+          "One windshield claim in 2023."
+        ]
+      },
+      "usage": {
+        "input_tokens": 250,
+        "output_tokens": 89,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "6a1d3edbfac94d69a430119cd5864d82",
+      "span_id": "74bef677a89946118782f76bafcc31c8",
+      "parent_span_id": "6476b01201c24eaca7bd8d0caf9f1342",
+      "case_id": "bdbe757a971b467fbe704c316016c6db",
+      "agent": "enrichment_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:52.359711+00:00",
+      "ended_at": "2026-10-12T00:54:53.453809+00:00",
+      "duration_ms": 1096.2,
+      "input": {
+        "applicant_name": "Elena Petrov",
+        "date_of_birth": "1992-01-30",
+        "product": "auto",
+        "coverage_amount": 55000.0,
+        "stated_income": 66000.0,
+        "missing_fields": [],
+        "notes": [
+          "One windshield claim in 2023."
+        ]
+      },
+      "output": {
+        "credit_band": "b",
+        "prior_claims_count": 1,
+        "asset_age_years": 6.0,
+        "flags": [
+          "Prior claim within the last 3 years"
+        ],
+        "notes": []
+      },
+      "usage": {
+        "input_tokens": 249,
+        "output_tokens": 19,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "6a1d3edbfac94d69a430119cd5864d82",
+      "span_id": "07b89859e2df4f7bb90e237db5751571",
+      "parent_span_id": "6476b01201c24eaca7bd8d0caf9f1342",
+      "case_id": "bdbe757a971b467fbe704c316016c6db",
+      "agent": "risk_scoring_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:53.453887+00:00",
+      "ended_at": "2026-10-12T00:55:04.713276+00:00",
+      "duration_ms": 11259.5,
+      "input": {
+        "intake": {
+          "applicant_name": "Elena Petrov",
+          "date_of_birth": "1992-01-30",
+          "product": "auto",
+          "coverage_amount": 55000.0,
+          "stated_income": 66000.0,
+          "missing_fields": [],
+          "notes": [
+            "One windshield claim in 2023."
+          ]
+        },
+        "enrichment": {
+          "credit_band": "b",
+          "prior_claims_count": 1,
+          "asset_age_years": 6.0,
+          "flags": [
+            "Prior claim within the last 3 years"
+          ],
+          "notes": []
+        }
+      },
+      "output": {
+        "score": 45,
+        "factors": [
+          {
+            "name": "Prior Claim Within Last 3 Years",
+            "points": 20,
+            "detail": "The applicant has a prior claim (windshield) within the last 3 years, which increases the risk of future claims."
+          },
+          {
+            "name": "Credit Band B",
+            "points": 15,
+            "detail": "A credit band of B indicates a moderate risk of default, which could impact the applicant's ability to manage financial obligations."
+          },
+          {
+            "name": "Coverage Amount Relative to Income",
+            "points": 10,
+            "detail": "The coverage amount of $55,000 is slightly higher than the stated income of $66,000, which may indicate over-insurance or financial strain."
+          }
+        ],
+        "rationale": "The applicant has a prior claim within the last 3 years, which is a significant risk factor. The credit band of B indicates a moderate risk of default. The coverage amount is slightly higher than the stated income, which may suggest over-insurance or financial strain. These factors collectively contribute to a moderate underwriting risk."
+      },
+      "usage": {
+        "input_tokens": 216,
+        "output_tokens": 259,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "6a1d3edbfac94d69a430119cd5864d82",
+      "span_id": "4de2aadd1af6457cba7b9f5c201366a9",
+      "parent_span_id": "6476b01201c24eaca7bd8d0caf9f1342",
+      "case_id": "bdbe757a971b467fbe704c316016c6db",
+      "agent": "recommendation_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:55:04.713575+00:00",
+      "ended_at": "2026-10-12T00:55:07.522994+00:00",
+      "duration_ms": 2809.5,
+      "input": {
+        "intake": {
+          "applicant_name": "Elena Petrov",
+          "date_of_birth": "1992-01-30",
+          "product": "auto",
+          "coverage_amount": 55000.0,
+          "stated_income": 66000.0,
+          "missing_fields": [],
+          "notes": [
+            "One windshield claim in 2023."
+          ]
+        },
+        "enrichment": {
+          "credit_band": "b",
+          "prior_claims_count": 1,
+          "asset_age_years": 6.0,
+          "flags": [
+            "Prior claim within the last 3 years"
+          ],
+          "notes": []
+        },
+        "risk": {
+          "score": 45,
+          "factors": [
+            {
+              "name": "Prior Claim Within Last 3 Years",
+              "points": 20,
+              "detail": "The applicant has a prior claim (windshield) within the last 3 years, which increases the risk of future claims."
+            },
+            {
+              "name": "Credit Band B",
+              "points": 15,
+              "detail": "A credit band of B indicates a moderate risk of default, which could impact the applicant's ability to manage financial obligations."
+            },
+            {
+              "name": "Coverage Amount Relative to Income",
+              "points": 10,
+              "detail": "The coverage amount of $55,000 is slightly higher than the stated income of $66,000, which may indicate over-insurance or financial strain."
+            }
+          ],
+          "rationale": "The applicant has a prior claim within the last 3 years, which is a significant risk factor. The credit band of B indicates a moderate risk of default. The coverage amount is slightly higher than the stated income, which may suggest over-insurance or financial strain. These factors collectively contribute to a moderate underwriting risk."
+        }
+      },
+      "output": {
+        "decision": "refer",
+        "reasons": [
+          "Score 31-60 refers.",
+          "Prior Claim Within Last 3 Years is a significant risk factor.",
+          "Credit Band B indicates a moderate risk of default."
+        ],
+        "conditions": []
+      },
+      "usage": {
+        "input_tokens": 529,
+        "output_tokens": 52,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    }
+  ]
+}

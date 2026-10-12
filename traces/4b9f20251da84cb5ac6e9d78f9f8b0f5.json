@@ -1,0 +1,241 @@
+{
+  "trace_id": "4b9f20251da84cb5ac6e9d78f9f8b0f5",
+  "case_id": "18c775c7867b43b994a5b6b39598a656",
+  "created_at": "2026-10-12T00:54:00.295918+00:00",
+  "spans": [
+    {
+      "trace_id": "4b9f20251da84cb5ac6e9d78f9f8b0f5",
+      "span_id": "545fa8c7410c44239b10cbd25b4fb320",
+      "parent_span_id": null,
+      "case_id": "18c775c7867b43b994a5b6b39598a656",
+      "agent": "pipeline",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:00.295926+00:00",
+      "ended_at": "2026-10-12T00:54:18.717151+00:00",
+      "duration_ms": 18421.2,
+      "input": null,
+      "output": null,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "model": ""
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "4b9f20251da84cb5ac6e9d78f9f8b0f5",
+      "span_id": "9cab01f904624b9bbe53401739fa5d79",
+      "parent_span_id": "545fa8c7410c44239b10cbd25b4fb320",
+      "case_id": "18c775c7867b43b994a5b6b39598a656",
+      "agent": "intake_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:00.295944+00:00",
+      "ended_at": "2026-10-12T00:54:07.412064+00:00",
+      "duration_ms": 7116.1,
+      "input": {
+        "applicant_name": "Dana Whitfield",
+        "date_of_birth": "1990-04-12",
+        "address": "48 Alder Lane, Springfield",
+        "product": "auto",
+        "coverage_amount": 42000.0,
+        "stated_income": 78000.0,
+        "claims_history_text": "No prior claims. Vehicle is 3 years old."
+      },
+      "output": {
+        "applicant_name": "Dana Whitfield",
+        "date_of_birth": "1990-04-12",
+        "product": "auto",
+        "coverage_amount": 42000.0,
+        "stated_income": 78000.0,
+        "missing_fields": [],
+        "notes": [
+          "No prior claims. Vehicle is 3 years old."
+        ]
+      },
+      "usage": {
+        "input_tokens": 252,
+        "output_tokens": 94,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "4b9f20251da84cb5ac6e9d78f9f8b0f5",
+      "span_id": "6e70a3aae7cd4540aa2649d44f7f5461",
+      "parent_span_id": "545fa8c7410c44239b10cbd25b4fb320",
+      "case_id": "18c775c7867b43b994a5b6b39598a656",
+      "agent": "enrichment_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:07.412153+00:00",
+      "ended_at": "2026-10-12T00:54:08.622763+00:00",
+      "duration_ms": 1210.6,
+      "input": {
+        "applicant_name": "Dana Whitfield",
+        "date_of_birth": "1990-04-12",
+        "product": "auto",
+        "coverage_amount": 42000.0,
+        "stated_income": 78000.0,
+        "missing_fields": [],
+        "notes": [
+          "No prior claims. Vehicle is 3 years old."
+        ]
+      },
+      "output": {
+        "credit_band": "a",
+        "prior_claims_count": 0,
+        "asset_age_years": 3.0,
+        "flags": [
+          "No prior claims"
+        ],
+        "notes": [
+          "Vehicle is 3 years old"
+        ]
+      },
+      "usage": {
+        "input_tokens": 250,
+        "output_tokens": 20,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "4b9f20251da84cb5ac6e9d78f9f8b0f5",
+      "span_id": "6e3e89148513445d8c8fef7621d75f91",
+      "parent_span_id": "545fa8c7410c44239b10cbd25b4fb320",
+      "case_id": "18c775c7867b43b994a5b6b39598a656",
+      "agent": "risk_scoring_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:08.622849+00:00",
+      "ended_at": "2026-10-12T00:54:15.333951+00:00",
+      "duration_ms": 6711.1,
+      "input": {
+        "intake": {
+          "applicant_name": "Dana Whitfield",
+          "date_of_birth": "1990-04-12",
+          "product": "auto",
+          "coverage_amount": 42000.0,
+          "stated_income": 78000.0,
+          "missing_fields": [],
+          "notes": [
+            "No prior claims. Vehicle is 3 years old."
+          ]
+        },
+        "enrichment": {
+          "credit_band": "a",
+          "prior_claims_count": 0,
+          "asset_age_years": 3.0,
+          "flags": [
+            "No prior claims"
+          ],
+          "notes": [
+            "Vehicle is 3 years old"
+          ]
+        }
+      },
+      "output": {
+        "score": 15,
+        "factors": [
+          {
+            "name": "Credit Band",
+            "points": 5,
+            "detail": "Credit band 'A' indicates strong creditworthiness, which reduces underwriting risk."
+          },
+          {
+            "name": "No Prior Claims",
+            "points": 5,
+            "detail": "No prior claims history suggests a lower likelihood of future claims."
+          },
+          {
+            "name": "Vehicle Age",
+            "points": 5,
+            "detail": "Vehicle is 3 years old, which is within a reasonable age range for risk assessment."
+          }
+        ],
+        "rationale": "The applicant has a strong credit band, no prior claims, and a vehicle that is 3 years old. These factors collectively indicate a low underwriting risk."
+      },
+      "usage": {
+        "input_tokens": 218,
+        "output_tokens": 152,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "4b9f20251da84cb5ac6e9d78f9f8b0f5",
+      "span_id": "f3b4c2b15cfd44ab8f84d3150dbeffb5",
+      "parent_span_id": "545fa8c7410c44239b10cbd25b4fb320",
+      "case_id": "18c775c7867b43b994a5b6b39598a656",
+      "agent": "recommendation_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:15.334128+00:00",
+      "ended_at": "2026-10-12T00:54:18.717127+00:00",
+      "duration_ms": 3383.0,
+      "input": {
+        "intake": {
+          "applicant_name": "Dana Whitfield",
+          "date_of_birth": "1990-04-12",
+          "product": "auto",
+          "coverage_amount": 42000.0,
+          "stated_income": 78000.0,
+          "missing_fields": [],
+          "notes": [
+            "No prior claims. Vehicle is 3 years old."
+          ]
+        },
+        "enrichment": {
+          "credit_band": "a",
+          "prior_claims_count": 0,
+          "asset_age_years": 3.0,
+          "flags": [
+            "No prior claims"
+          ],
+          "notes": [
+            "Vehicle is 3 years old"
+          ]
+        },
+        "risk": {
+          "score": 15,
+          "factors": [
+            {
+              "name": "Credit Band",
+              "points": 5,
+              "detail": "Credit band 'A' indicates strong creditworthiness, which reduces underwriting risk."
+            },
+            {
+              "name": "No Prior Claims",
+              "points": 5,
+              "detail": "No prior claims history suggests a lower likelihood of future claims."
+            },
+            {
+              "name": "Vehicle Age",
+              "points": 5,
+              "detail": "Vehicle is 3 years old, which is within a reasonable age range for risk assessment."
+            }
+          ],
+          "rationale": "The applicant has a strong credit band, no prior claims, and a vehicle that is 3 years old. These factors collectively indicate a low underwriting risk."
+        }
+      },
+      "output": {
+        "decision": "approve",
+        "reasons": [
+          "Score is within the 0-30 range.",
+          "All critical fields (date_of_birth, product, coverage_amount) are present.",
+          "Credit_band is not a no_hit.",
+          "No missing_fields."
+        ],
+        "conditions": []
+      },
+      "usage": {
+        "input_tokens": 449,
+        "output_tokens": 60,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    }
+  ]
+}

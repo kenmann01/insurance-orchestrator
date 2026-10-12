@@ -1,0 +1,225 @@
+{
+  "trace_id": "d8b8f0cac746413fb9b54bf01dd0d828",
+  "case_id": "707925117fb644bb9aec9743fc9cc45c",
+  "created_at": "2026-10-12T00:54:37.564457+00:00",
+  "spans": [
+    {
+      "trace_id": "d8b8f0cac746413fb9b54bf01dd0d828",
+      "span_id": "13720e6607394dba9b53e2d24cebd5d4",
+      "parent_span_id": null,
+      "case_id": "707925117fb644bb9aec9743fc9cc45c",
+      "agent": "pipeline",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:37.564476+00:00",
+      "ended_at": "2026-10-12T00:54:48.281173+00:00",
+      "duration_ms": 10716.7,
+      "input": null,
+      "output": null,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "model": ""
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "d8b8f0cac746413fb9b54bf01dd0d828",
+      "span_id": "246a4734e25f439ca937695f08e412cb",
+      "parent_span_id": "13720e6607394dba9b53e2d24cebd5d4",
+      "case_id": "707925117fb644bb9aec9743fc9cc45c",
+      "agent": "intake_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:37.564530+00:00",
+      "ended_at": "2026-10-12T00:54:41.765990+00:00",
+      "duration_ms": 4201.5,
+      "input": {
+        "applicant_name": "Priya Natarajan",
+        "date_of_birth": "1985-07-21",
+        "address": "221 Birch Street, Springfield",
+        "product": "life",
+        "coverage_amount": 500000.0,
+        "stated_income": null,
+        "claims_history_text": null
+      },
+      "output": {
+        "applicant_name": "Priya Natarajan",
+        "date_of_birth": "1985-07-21",
+        "product": "life",
+        "coverage_amount": 500000.0,
+        "stated_income": null,
+        "missing_fields": [],
+        "notes": [
+          "Address provided but not a required field.",
+          "Claims history text is not provided."
+        ]
+      },
+      "usage": {
+        "input_tokens": 238,
+        "output_tokens": 95,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "d8b8f0cac746413fb9b54bf01dd0d828",
+      "span_id": "aaa922f1bf6d43ab840f314873be53b3",
+      "parent_span_id": "13720e6607394dba9b53e2d24cebd5d4",
+      "case_id": "707925117fb644bb9aec9743fc9cc45c",
+      "agent": "enrichment_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:41.766086+00:00",
+      "ended_at": "2026-10-12T00:54:43.223873+00:00",
+      "duration_ms": 1457.8,
+      "input": {
+        "applicant_name": "Priya Natarajan",
+        "date_of_birth": "1985-07-21",
+        "product": "life",
+        "coverage_amount": 500000.0,
+        "stated_income": null,
+        "missing_fields": [],
+        "notes": [
+          "Address provided but not a required field.",
+          "Claims history text is not provided."
+        ]
+      },
+      "output": {
+        "credit_band": "no_hit",
+        "prior_claims_count": 0,
+        "asset_age_years": null,
+        "flags": [
+          "No credit hit recorded"
+        ],
+        "notes": [
+          "Address provided but not a required field.",
+          "Claims history text is not provided."
+        ]
+      },
+      "usage": {
+        "input_tokens": 232,
+        "output_tokens": 31,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "d8b8f0cac746413fb9b54bf01dd0d828",
+      "span_id": "b71c9c5052304bb39e9cbe6359e40182",
+      "parent_span_id": "13720e6607394dba9b53e2d24cebd5d4",
+      "case_id": "707925117fb644bb9aec9743fc9cc45c",
+      "agent": "risk_scoring_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:43.223996+00:00",
+      "ended_at": "2026-10-12T00:54:46.901544+00:00",
+      "duration_ms": 3677.6,
+      "input": {
+        "intake": {
+          "applicant_name": "Priya Natarajan",
+          "date_of_birth": "1985-07-21",
+          "product": "life",
+          "coverage_amount": 500000.0,
+          "stated_income": null,
+          "missing_fields": [],
+          "notes": [
+            "Address provided but not a required field.",
+            "Claims history text is not provided."
+          ]
+        },
+        "enrichment": {
+          "credit_band": "no_hit",
+          "prior_claims_count": 0,
+          "asset_age_years": null,
+          "flags": [
+            "No credit hit recorded"
+          ],
+          "notes": [
+            "Address provided but not a required field.",
+            "Claims history text is not provided."
+          ]
+        }
+      },
+      "output": {
+        "score": 10,
+        "factors": [
+          {
+            "name": "No credit hit recorded",
+            "points": 10,
+            "detail": "The enrichment data indicates no credit hit was recorded, which suggests a low risk of financial instability or default."
+          }
+        ],
+        "rationale": "The absence of a credit hit and the lack of prior claims indicate a low underwriting risk."
+      },
+      "usage": {
+        "input_tokens": 227,
+        "output_tokens": 79,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    },
+    {
+      "trace_id": "d8b8f0cac746413fb9b54bf01dd0d828",
+      "span_id": "0d4f4dcf3343497194858cdba829ef11",
+      "parent_span_id": "13720e6607394dba9b53e2d24cebd5d4",
+      "case_id": "707925117fb644bb9aec9743fc9cc45c",
+      "agent": "recommendation_agent",
+      "attempt": 1,
+      "started_at": "2026-10-12T00:54:46.901757+00:00",
+      "ended_at": "2026-10-12T00:54:48.281094+00:00",
+      "duration_ms": 1379.4,
+      "input": {
+        "intake": {
+          "applicant_name": "Priya Natarajan",
+          "date_of_birth": "1985-07-21",
+          "product": "life",
+          "coverage_amount": 500000.0,
+          "stated_income": null,
+          "missing_fields": [],
+          "notes": [
+            "Address provided but not a required field.",
+            "Claims history text is not provided."
+          ]
+        },
+        "enrichment": {
+          "credit_band": "no_hit",
+          "prior_claims_count": 0,
+          "asset_age_years": null,
+          "flags": [
+            "No credit hit recorded"
+          ],
+          "notes": [
+            "Address provided but not a required field.",
+            "Claims history text is not provided."
+          ]
+        },
+        "risk": {
+          "score": 10,
+          "factors": [
+            {
+              "name": "No credit hit recorded",
+              "points": 10,
+              "detail": "The enrichment data indicates no credit hit was recorded, which suggests a low risk of financial instability or default."
+            }
+          ],
+          "rationale": "The absence of a credit hit and the lack of prior claims indicate a low underwriting risk."
+        }
+      },
+      "output": {
+        "decision": "refer",
+        "reasons": [
+          "credit_band no_hit forces refer"
+        ],
+        "conditions": []
+      },
+      "usage": {
+        "input_tokens": 396,
+        "output_tokens": 24,
+        "model": "qwen3:8b"
+      },
+      "status": "ok",
+      "error": null
+    }
+  ]
+}
