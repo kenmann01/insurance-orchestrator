@@ -19,6 +19,7 @@ uv run scripts/run_cases.py                                     # all four fixtu
 uv run scripts/run_cases.py --risk-failures 2                   # failure drill: the risk agent times out twice, then the case recovers
 uv run scripts/run_cases.py --risk-failures always              # failure drill: the risk agent always times out, the case escalates to a code-issued refer
 uv run scripts/analyze_traces.py                                # summarize traces/ into docs/cost_latency.md (latency and hosted-equivalent cost)
+uv run python scripts/build_submission.py                       # rebuild submission.pdf from docs, code, traces, and captured evidence
 ```
 
 Handy flags for run_cases.py: `--case CASE-003` runs a single fixture, `--backend scripted` swaps the live model for the deterministic offline client (no Ollama needed, decisions always match expectations), and `--traces-dir` chooses where traces are written.

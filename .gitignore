@@ -3,4 +3,5 @@ __pycache__/
 *.pyc
 .pytest_cache/
 submission.html
+submission.pdf
 evidence/*.png
